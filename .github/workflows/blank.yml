@@ -1,0 +1,30 @@
+name: Manual Debug with sshx
+
+on:
+  workflow_dispatch:        # 只支持手动触发
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python 依赖
+        run: |
+          pip install pytelegrambotapi telethon
+
+      - name: 安装 sshx 并启动 Bot（并行运行）
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          ADMIN_ID: ${{ secrets.ADMIN_ID }}
+        run: |
+          # 安装 sshx
+          curl -sSf https://sshx.io/get | sh
+          
+          # 后台运行 Bot
+          python your_script.py &
+          
+          # 前台启动 sshx（会阻塞，让你远程操作）
+          ~/.sshx/bin/sshx
