@@ -1,30 +1,32 @@
-name: Manual Debug with sshx
+name: Run  Bot
 
 on:
-  workflow_dispatch:        # 只支持手动触发
+  push:
+    branches: [ main ]      # push 到 main 分支时触发
+  schedule:
+    - cron: '0 */6 * * *'   # 每 6 小时运行一次（可删除或修改）
+  workflow_dispatch:        # 支持手动触发
 
 jobs:
-  debug:
+  run-bot:
     runs-on: ubuntu-latest
     
     steps:
       - name: 拉取代码
         uses: actions/checkout@v4
 
-      - name: 安装 Python 依赖
+      - name: 设置 Python 环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: 安装依赖
         run: |
           pip install pytelegrambotapi telethon
 
-      - name: 安装 sshx 并启动 Bot（并行运行）
+      - name: 运行 Bot
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          ADMIN_ID: ${{ secrets.ADMIN_ID }}
+          ADMIN_ID: ${{ secrets.ADMIN_ID }}   # 如果没加这个 Secret，可以删掉这行
         run: |
-          # 安装 sshx
-          curl -sSf https://sshx.io/get | sh
-          
-          # 后台运行 Bot
-          python your_script.py &
-          
-          # 前台启动 sshx（会阻塞，让你远程操作）
-          ~/.sshx/bin/sshx
+          python your_script.py
